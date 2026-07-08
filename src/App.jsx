@@ -182,7 +182,6 @@ export default function App() {
             <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 tracking-wider">
               테이블 마스터
             </h1>
-            <p className="text-[10px] text-amber-500/70 font-semibold uppercase tracking-widest">Table 6 • Gold Service</p>
           </div>
         </div>
 
@@ -196,22 +195,6 @@ export default function App() {
             <span>홈으로</span>
           </button>
         )}
-
-        {/* Cart Trigger */}
-        <button
-          onClick={() => setShowOrderModal(true)}
-          className="relative bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 active:scale-95 transition text-black font-extrabold px-4 py-2.5 rounded-xl flex items-center space-x-2 shadow-lg shadow-amber-500/20"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <span className="hidden sm:inline text-xs font-black">주문내역</span>
-          {cart.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white font-extrabold text-xs w-6 h-6 flex items-center justify-center rounded-full border-2 border-black animate-pulse">
-              {cart.reduce((sum, item) => sum + item.qty, 0)}
-            </span>
-          )}
-        </button>
       </header>
 
       {/* Main Container */}
@@ -424,7 +407,7 @@ function WelcomeLanding({ setTab, setShowCallModal }) {
           <div className="relative p-3 rounded-full border-4 border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent shadow-2xl shadow-amber-500/20 hover:border-amber-500/80 transition-all duration-300">
             {/* The provided KakaoTalk Image */}
             <img 
-              src="KakaoTalk_20220811_120355071.png" 
+              src="KakaoTalk_20220811_120355071_2.png" 
               alt="테이블 마스터 캐릭터" 
               className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 object-contain hover:scale-105 transition-transform duration-500"
               onError={(e) => {
@@ -433,11 +416,6 @@ function WelcomeLanding({ setTab, setShowCallModal }) {
                 e.target.src = "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=400";
               }}
             />
-          </div>
-          <div className="mt-4 text-center">
-            <span className="text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-widest">
-              Table 6 • 스마트 가이드
-            </span>
           </div>
         </div>
 
