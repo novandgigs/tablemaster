@@ -75,9 +75,10 @@ const PRICING_PLANS = [
 // ==========================================
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('welcome'); // Starts exactly on 'welcome'
+  const [activeTab, setActiveTab] = useState('welcome'); // Default is 'welcome'
   const [cart, setCart] = useState([]);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
   // Recommender States
@@ -94,7 +95,7 @@ export default function App() {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
-  // Run live recommendation filtration
+  // Run initial recommendation
   useEffect(() => {
     handleRecommend();
   }, [recPlayers, recTime, recType]);
@@ -153,11 +154,11 @@ export default function App() {
       {/* Global CSS Style for Fade In Animation */}
       <style>{`
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(15px); }
+          from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
-          animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
 
@@ -169,60 +170,59 @@ export default function App() {
         </div>
       )}
 
-      {/* Header: Visible ONLY inside inner tabs, Hidden on welcome screen */}
-      {activeTab !== 'welcome' && (
-        <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-amber-500/30 px-4 py-4 md:px-8 flex justify-between items-center animate-fade-in">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setActiveTab('welcome')}
-              className="bg-neutral-900 hover:bg-neutral-800 text-amber-400 font-bold px-3.5 py-2 rounded-xl text-xs border border-amber-500/30 flex items-center space-x-1.5 transition-all active:scale-95"
-            >
-              <span>◀</span>
-              <span>홈으로</span>
-            </button>
-            <div className="hidden sm:block h-6 w-px bg-stone-800" />
-            <div className="hidden sm:block">
-              <h1 className="text-md font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-550">
-                {activeTab === 'pricing' && '요금 안내'}
-                {activeTab === 'menu' && '음료 & 간식 메뉴판'}
-                {activeTab === 'recommender' && '보드게임 맞춤 추천'}
-                {activeTab === 'newArrivals' && '매장 신작게임 소개'}
-                {activeTab === 'helper' && '게임 만능 헬퍼'}
-              </h1>
-            </div>
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-amber-500/30 px-4 py-4 md:px-8 flex justify-between items-center">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('welcome')}>
+          <div className="p-2.5 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-xl shadow-lg shadow-amber-500/20">
+            <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
           </div>
-
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-bold text-amber-500/70 uppercase tracking-widest bg-neutral-950 px-3 py-1.5 rounded-lg border border-amber-500/10">Table 6</span>
-            
-            {/* Cart Trigger */}
-            <button
-              onClick={() => setShowOrderModal(true)}
-              className="relative bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 active:scale-95 transition text-black font-extrabold px-4 py-2 rounded-xl flex items-center space-x-2 shadow-lg shadow-amber-500/20 text-xs"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span>주문내역</span>
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white font-extrabold text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-black animate-pulse">
-                  {cart.reduce((sum, item) => sum + item.qty, 0)}
-                </span>
-              )}
-            </button>
+          <div>
+            <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 tracking-wider">
+              테이블 마스터
+            </h1>
+            <p className="text-[10px] text-amber-500/70 font-semibold uppercase tracking-widest">Table 6 • Gold Service</p>
           </div>
-        </header>
-      )}
+        </div>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center">
-        
-        {/* TAB 0: 첫 환영 화면 (Only button matrix) */}
-        {activeTab === 'welcome' && (
-          <WelcomeLanding setTab={setActiveTab} />
+        {/* Home Navigation button (Visible when not on welcome screen) */}
+        {activeTab !== 'welcome' && (
+          <button
+            onClick={() => setActiveTab('welcome')}
+            className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-amber-400 hover:text-amber-350 border border-amber-500/30 rounded-xl text-xs font-black transition-all duration-300 flex items-center space-x-1.5"
+          >
+            <span>◀</span>
+            <span>홈으로</span>
+          </button>
         )}
 
-        {/* TAB 1: 요금 안내 코너 */}
+        {/* Cart Trigger */}
+        <button
+          onClick={() => setShowOrderModal(true)}
+          className="relative bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 active:scale-95 transition text-black font-extrabold px-4 py-2.5 rounded-xl flex items-center space-x-2 shadow-lg shadow-amber-500/20"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span className="hidden sm:inline text-xs font-black">주문내역</span>
+          {cart.length > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white font-extrabold text-xs w-6 h-6 flex items-center justify-center rounded-full border-2 border-black animate-pulse">
+              {cart.reduce((sum, item) => sum + item.qty, 0)}
+            </span>
+          )}
+        </button>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8">
+        
+        {/* TAB 0: 첫 환영 화면 (사자 캐릭터 정중앙 + 버튼 좌우 배치) */}
+        {activeTab === 'welcome' && (
+          <WelcomeLanding setTab={setActiveTab} setShowCallModal={setShowCallModal} />
+        )}
+
+        {/* TAB 1: 이용 안내 코너 */}
         {activeTab === 'pricing' && (
           <PricingSection />
         )}
@@ -232,7 +232,7 @@ export default function App() {
           <MenuSection addToCart={addToCart} />
         )}
 
-        {/* TAB 3: 맞춤 게임 추천 코너 (Simplified 3 options only) */}
+        {/* TAB 3: 추천해줘 코너 */}
         {activeTab === 'recommender' && (
           <RecommenderSection
             recPlayers={recPlayers}
@@ -242,29 +242,42 @@ export default function App() {
             recType={recType}
             setRecType={setRecType}
             recommendedGames={recommendedGames}
+            handleRecommend={handleRecommend}
           />
         )}
 
-        {/* TAB 4: 신규 입고 게임 소개코너 */}
+        {/* TAB 4: 신작소식 코너 */}
         {activeTab === 'newArrivals' && (
           <NewArrivalsSection />
         )}
 
-        {/* TAB 5: 게임 헬퍼 코너 */}
+        {/* TAB 5: 잡동사니 코너 (게임 만능 헬퍼) */}
         {activeTab === 'helper' && (
           <HelperSection />
         )}
 
       </main>
 
-      {/* Bottom Mobile Navigation: Active only when NOT on welcome screen */}
-      {activeTab !== 'welcome' && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-neutral-950/95 border-t border-amber-500/20 backdrop-blur-lg flex justify-around py-2 px-1">
-          <MobileTabButton active={activeTab === 'welcome'} onClick={() => setActiveTab('welcome')} label="첫화면" icon="🏠" />
-          <MobileTabButton active={activeTab === 'pricing'} onClick={() => setActiveTab('pricing')} label="요금안내" icon="💰" />
-          <MobileTabButton active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} label="메뉴" icon="☕" />
-          <MobileTabButton active={activeTab === 'recommender'} onClick={() => setActiveTab('recommender')} label="게임추천" icon="🎯" />
-          <MobileTabButton active={activeTab === 'helper'} onClick={() => setActiveTab('helper')} label="게임헬퍼" icon="🛠️" />
+      {/* Custom Staff Call Modal */}
+      {showCallModal && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-neutral-900 border-2 border-amber-500 rounded-3xl max-w-sm w-full p-8 text-center shadow-2xl relative overflow-hidden animate-fade-in">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600" />
+            <div className="w-20 h-20 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 animate-bounce">
+              🔔
+            </div>
+            <h3 className="text-xl font-black text-white mb-2">직원 호출 완료</h3>
+            <p className="text-sm text-amber-500 font-bold mb-4">6번 테이블 호출벨 접수</p>
+            <p className="text-xs text-stone-400 leading-relaxed mb-6">
+              요청하신 부름이 카운터에 신속하게 전달되었습니다. 친절한 직원이 곧 자리로 가겠습니다. 잠시만 기다려주세요!
+            </p>
+            <button
+              onClick={() => setShowCallModal(false)}
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-black text-xs rounded-xl transition duration-300 active:scale-95 shadow-lg shadow-amber-500/10"
+            >
+              확인 / 닫기
+            </button>
+          </div>
         </div>
       )}
 
@@ -319,7 +332,7 @@ export default function App() {
                       </div>
                       
                       {/* Quantity Controls */}
-                      <div className="flex items-center space-x-2.5 bg-neutral-950 p-1.5 rounded-lg border border-stone-850">
+                      <div className="flex items-center space-x-2.5 bg-neutral-950 p-1.5 rounded-lg border border-stone-855">
                         <button
                           onClick={() => updateCartQty(item.cartItemId, -1)}
                           className="w-6 h-6 flex items-center justify-center rounded bg-stone-800 text-stone-300 hover:bg-stone-700 active:scale-90 font-bold"
@@ -378,98 +391,95 @@ export default function App() {
 }
 
 // ==========================================
-// MOBILE TABS INNER COMPONENT
-// ==========================================
-function MobileTabButton({ active, onClick, label, icon }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
-        active ? 'text-amber-400 scale-105' : 'text-stone-500'
-      }`}
-    >
-      <span className="text-lg mb-0.5">{icon}</span>
-      <span className="text-[9px] font-bold tracking-tight">{label}</span>
-    </button>
-  );
-}
-
-// ==========================================
 // LANDING WELCOME COMPONENT
 // ==========================================
-function WelcomeLanding({ setTab }) {
+function WelcomeLanding({ setTab, setShowCallModal }) {
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 flex flex-col items-center justify-center space-y-12 text-center animate-fade-in my-auto">
+    <div className="max-w-6xl mx-auto py-12 px-4 flex flex-col items-center justify-center min-h-[75vh] animate-fade-in">
       
-      {/* Welcome Slogan */}
-      <div className="space-y-4">
-        <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-black tracking-widest uppercase animate-pulse">
-          <span>✨</span>
-          <span>Premium Board Game Cafe Solution</span>
-          <span>✨</span>
+      {/* Symmetric Layout: Buttons (Left 3) + Image (Center) + Buttons (Right 3) */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center">
+        
+        {/* Left Side: 3 Buttons */}
+        <div className="flex flex-col space-y-4 md:space-y-6 order-2 md:order-1">
+          <LandingMenuButton
+            onClick={() => setTab('pricing')}
+            icon="💰"
+            title="이용 안내"
+          />
+          <LandingMenuButton
+            onClick={() => setTab('menu')}
+            icon="☕"
+            title="메뉴판"
+          />
+          <LandingMenuButton
+            onClick={() => setTab('recommender')}
+            icon="🎯"
+            title="추천해줘"
+          />
         </div>
-        <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tight">
-          저희 매장을 찾아주셔서 감사합니다
-        </h2>
-        <p className="text-stone-400 text-sm md:text-lg max-w-xl mx-auto leading-relaxed">
-          스마트 테이블 오더 및 룰 도우미 <strong className="text-amber-400 font-extrabold">"테이블 마스터"</strong>에 오신 것을 환영합니다. 원하시는 아이콘을 눌러 최상의 서비스를 시작해보세요!
-        </p>
+
+        {/* Center: Character Image */}
+        <div className="flex flex-col items-center justify-center order-1 md:order-2 py-4">
+          <div className="relative p-3 rounded-full border-4 border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent shadow-2xl shadow-amber-500/20 hover:border-amber-500/80 transition-all duration-300">
+            {/* The provided KakaoTalk Image */}
+            <img 
+              src="KakaoTalk_20220811_120355071.png" 
+              alt="테이블 마스터 캐릭터" 
+              className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 object-contain hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                // Safe elegant fallback in case path is unresolved in some test envs
+                e.target.onerror = null;
+                e.target.src = "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=400";
+              }}
+            />
+          </div>
+          <div className="mt-4 text-center">
+            <span className="text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-widest">
+              Table 6 • 스마트 가이드
+            </span>
+          </div>
+        </div>
+
+        {/* Right Side: 3 Buttons */}
+        <div className="flex flex-col space-y-4 md:space-y-6 order-3">
+          <LandingMenuButton
+            onClick={() => setTab('newArrivals')}
+            icon="🔥"
+            title="신작소식"
+          />
+          <LandingMenuButton
+            onClick={() => setTab('helper')}
+            icon="🛠️"
+            title="잡동사니"
+          />
+          {/* Call Bell Trigger */}
+          <button
+            onClick={() => setShowCallModal(true)}
+            className="group relative flex flex-col items-center justify-center py-6 px-4 bg-gradient-to-r from-red-950 to-neutral-950 hover:from-red-900 border-2 border-red-500/30 hover:border-red-500 rounded-3xl text-center transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/15 active:scale-98"
+          >
+            <div className="text-3xl mb-1.5 group-hover:animate-bounce">🔔</div>
+            <h3 className="text-base font-black text-white group-hover:text-red-400 transition-colors">호출</h3>
+            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-red-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-b-3xl" />
+          </button>
+        </div>
+
       </div>
 
-      {/* 5 Navigation Buttons with Grid */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5 pt-4">
-        <LandingMenuButton
-          onClick={() => setTab('pricing')}
-          icon="💰"
-          title="요금 안내"
-          desc="시간 및 알뜰 패키지"
-        />
-        <LandingMenuButton
-          onClick={() => setTab('menu')}
-          icon="☕"
-          title="음료 & 간식"
-          desc="맛있는 오더 서비스"
-        />
-        <LandingMenuButton
-          onClick={() => setTab('recommender')}
-          icon="🎯"
-          title="보드게임 추천"
-          desc="취향 저격 탐색 엔진"
-        />
-        <LandingMenuButton
-          onClick={() => setTab('newArrivals')}
-          icon="🔥"
-          title="매장 신작게임"
-          desc="이번 주 입고 라인업"
-        />
-        <LandingMenuButton
-          onClick={() => setTab('helper')}
-          icon="🛠️"
-          title="게임 만능 헬퍼"
-          desc="Chwazi 픽커 & 타이머"
-        />
-      </div>
-
-      {/* Decorative Brand Accent */}
-      <div className="pt-10 border-t border-neutral-900/60 w-full flex justify-between items-center text-xs text-stone-600">
-        <span>Table Master v4.0 • Table 6</span>
-        <span>스마트 멀티터치 감지 시스템 연동</span>
-      </div>
     </div>
   );
 }
 
-function LandingMenuButton({ onClick, icon, title, desc }) {
+function LandingMenuButton({ onClick, icon, title }) {
   return (
     <button
       onClick={onClick}
-      className="group relative flex flex-col items-center justify-center p-6 bg-gradient-to-b from-neutral-950 to-neutral-900 hover:from-neutral-900 border border-amber-500/25 hover:border-amber-400 rounded-3xl text-center transition-all duration-350 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 active:scale-95"
+      className="group relative flex flex-col items-center justify-center py-6 px-4 bg-gradient-to-b from-neutral-900 to-black hover:from-neutral-950 border-2 border-amber-500/20 hover:border-amber-400 rounded-3xl text-center transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 active:scale-98"
     >
-      <div className="text-4xl mb-3 group-hover:scale-115 transition-transform duration-300">{icon}</div>
-      <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors">{title}</h3>
-      <p className="text-[11px] text-stone-500 mt-1.5">{desc}</p>
+      <div className="text-3xl mb-1.5 group-hover:scale-110 transition-transform duration-300">{icon}</div>
+      <h3 className="text-base font-black text-white group-hover:text-amber-400 transition-colors">{title}</h3>
       
-      {/* Hover Light Stripe */}
+      {/* Hover Line */}
       <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-b-3xl" />
     </button>
   );
@@ -480,27 +490,27 @@ function LandingMenuButton({ onClick, icon, title, desc }) {
 // ==========================================
 
 // ------------------------------------------
-// 1. PRICING SECTION
+// 1. 이용 안내 (PRICING SECTION)
 // ------------------------------------------
 function PricingSection() {
   return (
-    <div className="space-y-8 animate-fade-in py-4">
+    <div className="space-y-8 animate-fade-in">
       <div className="text-center max-w-xl mx-auto space-y-2">
-        <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">💰 매장 이용 요금 안내</h2>
-        <p className="text-xs text-stone-400">합리적인 가격으로 온전한 즐거움을 누릴 수 있는 스탠다드 요금제입니다.</p>
+        <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">💰 이용 안내 및 요금표</h2>
+        <p className="text-xs text-stone-400">합리적인 가격으로 오랜 시간 완벽한 보드게임을 힐링하며 즐기세요.</p>
       </div>
 
-      {/* Plan Grid with Image Slots */}
+      {/* Plan Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {PRICING_PLANS.map((plan) => (
-          <div key={plan.id} className="relative bg-neutral-950 border-2 border-amber-500/20 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-amber-400 transition-all duration-300 shadow-xl">
+          <div key={plan.id} className="relative bg-neutral-950 border-2 border-amber-500/20 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-amber-400 transition-all duration-300">
             
             {/* Image Placeholder */}
-            <div className="h-32 bg-neutral-900 border-b border-amber-500/25 relative flex items-center justify-center text-stone-500 overflow-hidden">
+            <div className="h-32 bg-stone-900 border-b border-amber-500/25 relative flex items-center justify-center text-stone-550 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-tr from-amber-950/20 to-black opacity-60" />
               <div className="z-10 text-center px-4">
                 <span className="text-2xl block mb-1">📋</span>
-                <span className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest">{plan.imageText}</span>
+                <span className="text-[10px] font-bold text-amber-500/60 uppercase tracking-widest">{plan.imageText}</span>
               </div>
             </div>
 
@@ -526,12 +536,26 @@ function PricingSection() {
           </div>
         ))}
       </div>
+
+      {/* Helpful banner */}
+      <div className="bg-neutral-950 border border-amber-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center space-x-4 text-center md:text-left">
+          <span className="text-4xl">🎲</span>
+          <div>
+            <h4 className="text-base font-bold text-white">이용 꿀팁 & 주의사항</h4>
+            <p className="text-xs text-stone-400 mt-1">이용 시간 정산은 후불입니다. 보드게임 종류는 1회에 1개씩 교체해 주시는 매너를 권장합니다.</p>
+          </div>
+        </div>
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold text-xs px-3 py-1.5 rounded-lg">
+          ※ 주말 정액 패키지는 사전 문의 필수!
+        </div>
+      </div>
     </div>
   );
 }
 
 // ------------------------------------------
-// 2. MENU SECTION
+// 2. 메뉴판 (MENU SECTION)
 // ------------------------------------------
 function MenuSection({ addToCart }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -549,7 +573,7 @@ function MenuSection({ addToCart }) {
     : MENU_ITEMS.filter(item => item.category === selectedCategory);
 
   return (
-    <div className="space-y-6 animate-fade-in py-4">
+    <div className="space-y-6 animate-fade-in">
       
       {/* Category Slider */}
       <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
@@ -560,7 +584,7 @@ function MenuSection({ addToCart }) {
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all whitespace-nowrap border ${
               selectedCategory === cat.id
                 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 border-amber-400 text-black shadow-lg shadow-amber-500/10'
-                : 'bg-neutral-950 border-stone-850 text-stone-400 hover:text-stone-200'
+                : 'bg-neutral-950 border-stone-800 text-stone-400 hover:text-stone-200'
             }`}
           >
             <span>{cat.icon}</span>
@@ -576,7 +600,7 @@ function MenuSection({ addToCart }) {
         ))}
       </div>
 
-      {/* Helpful banner */}
+      {/* Friendly Footer Banner */}
       <div className="bg-gradient-to-r from-neutral-950 to-black border border-amber-500/20 rounded-2xl p-6 mt-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-4 text-center md:text-left">
           <span className="text-4xl">🍿</span>
@@ -602,10 +626,10 @@ function MenuItemCard({ item, onAdd }) {
       
       {/* Menu Image Space */}
       <div className="h-36 bg-neutral-900 border-b border-amber-500/15 relative flex items-center justify-center text-stone-500 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
         <div className="z-10 text-center px-4">
           <span className="text-2xl block mb-1">🍽️</span>
-          <span className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest">{item.imageText}</span>
+          <span className="text-[10px] font-bold text-amber-500/50 uppercase tracking-widest">{item.imageText}</span>
         </div>
       </div>
 
@@ -671,7 +695,7 @@ function MenuItemCard({ item, onAdd }) {
 }
 
 // ------------------------------------------
-// 3. RECOMMENDER SECTION (SIMPLIFIED ONLY 3 FILTERS)
+// 3. 추천해줘 (RECOMMENDER SECTION)
 // ------------------------------------------
 function RecommenderSection({
   recPlayers,
@@ -680,7 +704,8 @@ function RecommenderSection({
   setRecTime,
   recType,
   setRecType,
-  recommendedGames
+  recommendedGames,
+  handleRecommend
 }) {
 
   const gameTypes = [
@@ -692,20 +717,20 @@ function RecommenderSection({
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in py-4">
+    <div className="space-y-6 animate-fade-in">
       
       {/* Recommender Header */}
       <div className="text-center max-w-xl mx-auto space-y-2">
-        <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">🎯 맞춤형 보드게임 탐색기</h2>
-        <p className="text-xs text-stone-400">인원과 선호 스타일에 맞는 최고의 게임을 즉각적으로 추천해 드릴게요!</p>
+        <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">🎯 맞춤형 보드게임 검색엔진</h2>
+        <p className="text-xs text-stone-400">간단한 옵션 터치로 일치하는 추천 보드게임을 실시간으로 감상하세요!</p>
       </div>
 
-      {/* Selection Panel (Exactly 3 control options only) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-neutral-950 border border-amber-500/25 p-6 rounded-3xl shadow-lg">
+      {/* ONLY 3 OPTION FILTER (User Request) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-neutral-950 border border-amber-500/25 p-6 rounded-3xl">
         
-        {/* 1. Player Count Selector */}
+        {/* 1. 인원수 선택 */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-amber-400 block">👥 1. 인원수 선택</label>
+          <label className="text-xs font-bold text-amber-400 block">👥 인원수 선택 ({recPlayers}인)</label>
           <div className="flex items-center space-x-2 bg-neutral-900 p-2 rounded-xl border border-stone-800">
             <button
               onClick={() => setRecPlayers(Math.max(2, recPlayers - 1))}
@@ -723,9 +748,9 @@ function RecommenderSection({
           </div>
         </div>
 
-        {/* 2. Play Time Selection Buttons */}
+        {/* 2. 플레이 타임 선호도 */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-amber-400 block">⏱️ 2. 플레이 타임 선호도</label>
+          <label className="text-xs font-bold text-amber-400 block">⏱️ 플레이 타임 선호도</label>
           <div className="grid grid-cols-4 gap-1 bg-neutral-900 p-1 rounded-xl border border-stone-800 h-[56px] items-center">
             {['all', 'short', 'medium', 'long'].map((time) => {
               const labelMap = { all: '무관', short: '짧게', medium: '적당히', long: '길게' };
@@ -746,9 +771,9 @@ function RecommenderSection({
           </div>
         </div>
 
-        {/* 3. Game Type Selector */}
+        {/* 3. 선호하는 게임 유형 */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-amber-400 block">🎨 3. 선호하는 게임 유형</label>
+          <label className="text-xs font-bold text-amber-400 block">🎨 선호하는 게임 유형</label>
           <select
             value={recType}
             onChange={(e) => setRecType(e.target.value)}
@@ -762,25 +787,25 @@ function RecommenderSection({
 
       </div>
 
-      {/* Live filtered Recommendation Results */}
+      {/* Recommendation Results */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-xs font-bold text-stone-400">
-            실시간 필터링 결과: 총 <span className="text-amber-400 font-extrabold">{recommendedGames.length}개</span> 탐색 완료
+            조건에 부합하는 게임 <span className="text-amber-400 font-extrabold">{recommendedGames.length}개</span> 탐색 완료
           </h3>
         </div>
 
         {recommendedGames.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recommendedGames.map(game => (
               <div key={game.id} className="bg-neutral-950 border-2 border-amber-500/15 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-amber-400 transition-all duration-300">
                 
-                {/* Visual Image Area */}
+                {/* Image Placeholder */}
                 <div className="h-32 bg-stone-900 border-b border-amber-500/15 relative flex items-center justify-center text-stone-500 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/85 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-transparent" />
                   <div className="z-10 text-center px-4">
                     <span className="text-2xl block mb-1">📦</span>
-                    <span className="text-[10px] font-bold text-amber-500/60 uppercase tracking-widest">{game.imageText}</span>
+                    <span className="text-[10px] font-bold text-amber-500/50 uppercase tracking-widest">{game.imageText}</span>
                   </div>
                 </div>
 
@@ -817,7 +842,7 @@ function RecommenderSection({
           <div className="text-center py-16 bg-neutral-950 border border-stone-800 rounded-3xl">
             <span className="text-5xl block mb-3">🔍</span>
             <p className="text-sm text-stone-400">조건에 딱 맞는 게임이 존재하지 않네요!</p>
-            <p className="text-xs text-stone-500 mt-1">간단히 조건(인원수/장르)을 변경하여 실시간으로 확인해 보세요.</p>
+            <p className="text-xs text-stone-500 mt-1">인원이나 장르 조건을 변경하여 다시 확인해 보거나 직원에게 바로 요청해 주세요!</p>
           </div>
         )}
       </div>
@@ -827,11 +852,11 @@ function RecommenderSection({
 }
 
 // ------------------------------------------
-// 4. NEW ARRIVALS SECTION
+// 4. 신작소식 (NEW ARRIVALS SECTION)
 // ------------------------------------------
 function NewArrivalsSection() {
   return (
-    <div className="space-y-6 animate-fade-in py-4">
+    <div className="space-y-6 animate-fade-in">
       <div className="text-center max-w-xl mx-auto space-y-2 mb-8">
         <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">🔥 매장 신작 소식 (NEW ARRIVALS)</h2>
         <p className="text-xs text-stone-400">이번 주 보드게임 카페에 새로 입고된 최정상급 인기 타이틀을 소개합니다!</p>
@@ -841,12 +866,12 @@ function NewArrivalsSection() {
         {NEW_GAMES.map((game) => (
           <div key={game.id} className="bg-gradient-to-br from-neutral-950 to-black border-2 border-amber-500/20 rounded-3xl p-6 md:p-8 flex flex-col lg:flex-row gap-6 items-center relative overflow-hidden shadow-2xl">
             
-            {/* Embedded Image Space for each game on the left */}
+            {/* Embedded Image Space */}
             <div className="w-full lg:w-[260px] h-[190px] bg-stone-900 border border-amber-500/20 rounded-2xl flex-shrink-0 relative flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
               <div className="z-10 text-center px-4">
                 <span className="text-3xl block mb-2">🎁</span>
-                <span className="text-[10px] font-extrabold text-amber-500/70 tracking-widest uppercase">{game.imageText}</span>
+                <span className="text-[10px] font-extrabold text-amber-500/77 tracking-widest uppercase">{game.imageText}</span>
               </div>
             </div>
 
@@ -904,29 +929,29 @@ function NewArrivalsSection() {
 }
 
 // ------------------------------------------
-// 5. HELPER SECTION (TOOLSET)
+// 5. 잡동사니 코너 (HELPER SECTION)
 // ------------------------------------------
 function HelperSection() {
-  const [activeTool, setActiveTool] = useState('chwazi'); // 'chwazi' | 'timer' | 'roulette'
+  const [activeTool, setActiveTool] = useState('chwazi'); // Default 'chwazi'
 
   return (
-    <div className="space-y-6 animate-fade-in py-4">
+    <div className="space-y-6 animate-fade-in">
       
       {/* Sub-Header */}
       <div className="text-center max-w-xl mx-auto space-y-2 mb-4">
-        <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">🛠️ 보드게임 만능 헬퍼 세트</h2>
-        <p className="text-xs text-stone-400">Chwazi 터치 픽커, 디지털 타이머, 룰렛 등을 활용해 보세요.</p>
+        <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">🛠️ 잡동사니 플레이 툴셋</h2>
+        <p className="text-xs text-stone-400">모래시계, 벌칙 룰렛, 그리고 손가락 멀티터치 츄아지(Chwazi)까지 한데 모았습니다.</p>
       </div>
 
       {/* Selector Grid */}
       <div className="grid grid-cols-3 gap-2 bg-neutral-950 p-1.5 rounded-2xl border border-stone-800">
-        <ToolTabButton active={activeTool === 'chwazi'} onClick={() => setActiveTool('chwazi')} label="츄아지 (Chwazi) 터치 픽커" icon="🖐️" />
+        <ToolTabButton active={activeTool === 'chwazi'} onClick={() => setActiveTool('chwazi')} label="츄아지 (선정/팀)" icon="🖐️" />
         <ToolTabButton active={activeTool === 'timer'} onClick={() => setActiveTool('timer')} label="모래시계 타이머" icon="⏳" />
         <ToolTabButton active={activeTool === 'roulette'} onClick={() => setActiveTool('roulette')} label="벌칙 돌림판" icon="🎡" />
       </div>
 
       {/* Tool Content Area */}
-      <div className="bg-neutral-950 border border-stone-800 rounded-3xl p-6 min-h-[450px] flex flex-col justify-center">
+      <div className="bg-neutral-950 border border-stone-800 rounded-3xl p-6 min-h-[400px]">
         {activeTool === 'chwazi' && <ChwaziTool />}
         {activeTool === 'timer' && <TimerTool />}
         {activeTool === 'roulette' && <RouletteTool />}
@@ -940,7 +965,7 @@ function ToolTabButton({ active, onClick, label, icon }) {
   return (
     <button
       onClick={onClick}
-      className={`py-3 px-2 rounded-xl text-xs md:text-sm font-bold flex flex-col items-center justify-center space-y-1 transition-all ${
+      className={`py-3 px-2 rounded-xl text-xs md:text-sm font-bold flex flex-col items-center justify-center space-y-1 transition-all duration-300 ${
         active
           ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-lg shadow-amber-500/10'
           : 'text-stone-400 hover:text-stone-200 hover:bg-neutral-900'
@@ -952,344 +977,252 @@ function ToolTabButton({ active, onClick, label, icon }) {
   );
 }
 
-// -------------------------------------
-// CHWAZI TOOL COMPONENT (Chwazi mechanism with multi-touch support & Desktop mock)
-// -------------------------------------
+// ------------------------------------------
+// CHWAZI TOOL COMPONENT (Interactive Touch/Mouse Multi-picker)
+// ------------------------------------------
 function ChwaziTool() {
-  const [chwaziMode, setChwaziMode] = useState('solo'); // 'solo' (선 정하기) | 'group' (팀 메이커)
-  const [groupCount, setGroupCount] = useState(2); // Splitting into how many groups
-  
-  // Custom tracking of active points (to support both multi-touch screens and mock desktop clicks)
-  const [fingers, setFingers] = useState([]); // { id, x, y, color, teamIndex }
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [selectionResult, setSelectionResult] = useState(null); // 'solo' -> single finger object, 'group' -> fingers with team tags
-  const [chwaziStatusText, setChwaziStatusText] = useState('여기에 손가락을 올려놓거나 마우스로 임의 지점들을 터치/클릭하세요.');
+  const [fingers, setFingers] = useState([]);
+  const [chwaziMode, setChwaziMode] = useState('one'); // 'one' (선정) | 'team' (팀나누기)
+  const [teamCount, setTeamCount] = useState(2);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [resultMessage, setResultMessage] = useState('');
+  const arenaRef = useRef(null);
 
-  const padRef = useRef(null);
+  // Generate unique beautiful colors for fingers
+  const fingerColors = ['#f59e0b', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#14b8a6', '#eab308'];
 
-  const colors = [
-    'rgba(239, 68, 68, 0.85)',   // Red
-    'rgba(59, 130, 246, 0.85)',  // Blue
-    'rgba(16, 185, 129, 0.85)',  // Green
-    'rgba(245, 158, 11, 0.85)',  // Amber
-    'rgba(139, 92, 246, 0.85)',  // Purple
-    'rgba(236, 72, 153, 0.85)',  // Pink
-    'rgba(20, 184, 166, 0.85)',  // Teal
-    'rgba(234, 179, 8, 0.85)',   // Yellow
-  ];
+  // Handle PC/Click Simulator
+  const handleArenaClick = (e) => {
+    if (isProcessing) return;
+    const rect = arenaRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-  // Map team index to distinct team colors
-  const teamColors = [
-    { name: '1팀 (블루)', bg: 'rgba(59, 130, 246, 0.95)', border: '#3b82f6' },
-    { name: '2팀 (오렌지)', bg: 'rgba(249, 115, 22, 0.95)', border: '#f97316' },
-    { name: '3팀 (그린)', bg: 'rgba(34, 197, 94, 0.95)', border: '#22c55e' },
-    { name: '4팀 (퍼플)', bg: 'rgba(168, 85, 247, 0.95)', border: '#a855f7' }
-  ];
-
-  // Helper: Find touch position relative to the pad container
-  const getCoordinates = (clientX, clientY) => {
-    if (!padRef.current) return { x: 0, y: 0 };
-    const rect = padRef.current.getBoundingClientRect();
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  };
-
-  // MULTI-TOUCH HANDLERS (for iPad, Tablet, Phones)
-  const handleTouchStart = (e) => {
-    if (isSelecting) return;
-    e.preventDefault();
-    const updatedFingers = [...fingers];
-
-    // Read all active touches
-    for (let i = 0; i < e.targetTouches.length; i++) {
-      const touch = e.targetTouches[i];
-      const { x, y } = getCoordinates(touch.clientX, touch.clientY);
-      
-      // If pointer is not already added
-      if (!updatedFingers.some(f => f.id === touch.identifier)) {
-        updatedFingers.push({
-          id: touch.identifier,
-          x,
-          y,
-          color: colors[updatedFingers.length % colors.length],
-          teamIndex: null
-        });
-      }
-    }
-    setFingers(updatedFingers);
-    setSelectionResult(null);
-    setChwaziStatusText(`${updatedFingers.length}개의 손가락이 인식되었습니다. 준비되면 아래 '매칭 시작'을 누르세요!`);
-  };
-
-  const handleTouchMove = (e) => {
-    if (isSelecting) return;
-    e.preventDefault();
-    const updatedFingers = fingers.map(finger => {
-      // Find corresponding active touch point
-      const activeTouch = Array.from(e.targetTouches).find(t => t.identifier === finger.id);
-      if (activeTouch) {
-        const { x, y } = getCoordinates(activeTouch.clientX, activeTouch.clientY);
-        return { ...finger, x, y };
-      }
-      return finger;
-    });
-    setFingers(updatedFingers);
-  };
-
-  const handleTouchEnd = (e) => {
-    if (isSelecting) return;
-    e.preventDefault();
-    // Filter and keep only fingers that are still touching
-    const activeIds = Array.from(e.targetTouches).map(t => t.identifier);
-    const updatedFingers = fingers.filter(f => activeIds.includes(f.id));
-    setFingers(updatedFingers);
-    if (updatedFingers.length === 0) {
-      setChwaziStatusText('여기에 손가락을 올려놓거나 마우스로 임의 지점들을 터치/클릭하세요.');
-    } else {
-      setChwaziStatusText(`${updatedFingers.length}개의 손가락이 인식되었습니다.`);
-    }
-  };
-
-  // MOUSE CLICK SIMULATION (Allows easy desktop PC usage/testing)
-  const handlePadClick = (e) => {
-    if (isSelecting) return;
-    const { x, y } = getCoordinates(e.clientX, e.clientY);
-    
-    // Check if clicked close to an existing circle to delete it
-    const clickRadius = 25;
+    // Check if clicked near an existing simulator finger to remove it
     const existingIndex = fingers.findIndex(f => {
-      const dist = Math.sqrt(Math.pow(f.x - x, 2) + Math.pow(f.y - y, 2));
-      return dist < clickRadius;
+      const dist = Math.hypot(f.x - x, f.y - y);
+      return dist < 30;
     });
 
     if (existingIndex !== -1) {
-      // Remove it
-      const updated = fingers.filter((_, idx) => idx !== existingIndex);
-      setFingers(updated);
-      setSelectionResult(null);
-      if (updated.length === 0) {
-        setChwaziStatusText('여기에 손가락을 올려놓거나 마우스로 임의 지점들을 터치/클릭하세요.');
-      } else {
-        setChwaziStatusText(`가상 손가락: ${updated.length}개 배치됨.`);
-      }
+      setFingers(fingers.filter((_, idx) => idx !== existingIndex));
     } else {
-      // Add new virtual finger
-      if (fingers.length >= 8) {
-        return;
-      }
-      const newId = Date.now() + Math.random();
-      const updated = [
-        ...fingers,
-        {
-          id: newId,
-          x,
-          y,
-          color: colors[fingers.length % colors.length],
-          teamIndex: null
-        }
-      ];
-      setFingers(updated);
-      setSelectionResult(null);
-      setChwaziStatusText(`가상 손가락: ${updated.length}개 배치됨. 준비가 끝나면 매칭버튼을 누르세요.`);
+      if (fingers.length >= 8) return; // Limit to 8 simulation fingers
+      const id = Date.now() + Math.random();
+      const color = fingerColors[fingers.length % fingerColors.length];
+      setFingers([...fingers, { id, x, y, color, isPicked: false, teamId: null }]);
     }
+    setResultMessage('');
   };
 
-  // Trigger Chwazi Matching Mechanics
-  const triggerChwaziMatch = () => {
-    if (fingers.length < 2) {
-      return;
-    }
+  // Handle Mobile Touch events to recreate genuine Chwazi
+  const handleTouchStart = (e) => {
+    if (isProcessing) return;
+    e.preventDefault();
+    updateTouchFingers(e.touches);
+  };
 
-    setIsSelecting(true);
-    setChwaziStatusText('두구두구... 손가락 스캔 및 분석 중...');
-    setSelectionResult(null);
+  const handleTouchMove = (e) => {
+    if (isProcessing) return;
+    e.preventDefault();
+    updateTouchFingers(e.touches);
+  };
 
-    // Chwazi dramatic countdown animation timing (1.8 seconds)
+  const handleTouchEnd = (e) => {
+    if (isProcessing) return;
+    e.preventDefault();
+    updateTouchFingers(e.touches);
+  };
+
+  const updateTouchFingers = (touches) => {
+    const rect = arenaRef.current.getBoundingClientRect();
+    const activeFingers = Array.from(touches).map((touch, index) => {
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      return {
+        id: touch.identifier,
+        x,
+        y,
+        color: fingerColors[index % fingerColors.length],
+        isPicked: false,
+        teamId: null
+      };
+    });
+    setFingers(activeFingers);
+    setResultMessage('');
+  };
+
+  const runChwazi = () => {
+    if (fingers.length < 2 || isProcessing) return;
+    setIsProcessing(true);
+    setResultMessage('손가락 감지 중... 3초 후 결과 공개!');
+
+    // Shaking Animation Countdown Simulation
+    let count = 0;
+    const interval = setInterval(() => {
+      // Add slight jitter/shake effect to simulated fingers
+      setFingers(prev => prev.map(f => ({
+        ...f,
+        x: f.x + (Math.random() * 6 - 3),
+        y: f.y + (Math.random() * 6 - 3)
+      })));
+      count++;
+      if (count > 15) clearInterval(interval);
+    }, 100);
+
     setTimeout(() => {
-      if (chwaziMode === 'solo') {
-        // Solo Selector Mode: Choose 1 random finger
-        const luckyIdx = Math.floor(Math.random() * fingers.length);
-        const selectedFinger = fingers[luckyIdx];
-        setSelectionResult({ type: 'solo', winnerId: selectedFinger.id });
-        setChwaziStatusText(`🎉 당첨자 선정 완료!`);
+      clearInterval(interval);
+      if (chwaziMode === 'one') {
+        // Pick one winner
+        const winIdx = Math.floor(Math.random() * fingers.length);
+        setFingers(prev => prev.map((f, idx) => ({
+          ...f,
+          isPicked: idx === winIdx
+        })));
+        setResultMessage(`🎉 당첨자 선정 완료! (${winIdx + 1}번 손가락)`);
       } else {
-        // Group Mode / Team Maker
+        // Divide teams
         const shuffled = [...fingers].sort(() => Math.random() - 0.5);
-        const assignedFingers = fingers.map(f => {
-          const shuffleIdx = shuffled.findIndex(sh => sh.id === f.id);
-          const assignedTeam = shuffleIdx % groupCount;
-          return { ...f, teamIndex: assignedTeam };
+        const nextFingers = fingers.map(f => {
+          const sIdx = shuffled.findIndex(sh => sh.id === f.id);
+          const teamId = (sIdx % teamCount) + 1;
+          return {
+            ...f,
+            teamId
+          };
         });
-        setFingers(assignedFingers);
-        setSelectionResult({ type: 'group' });
-        setChwaziStatusText(`👥 밸런스 그룹 매치 완료!`);
+        setFingers(nextFingers);
+        setResultMessage(`👥 ${teamCount}개 팀 배분 완료! (색상별 팀 확인)`);
       }
-      setIsSelecting(false);
-    }, 1800);
+      setIsProcessing(false);
+    }, 2000);
   };
 
   const resetChwazi = () => {
     setFingers([]);
-    setSelectionResult(null);
-    setIsSelecting(false);
-    setChwaziStatusText('여기에 손가락을 올려놓거나 마우스로 임의 지점들을 터치/클릭하세요.');
+    setResultMessage('');
+    setIsProcessing(false);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 py-2 w-full max-w-2xl mx-auto">
-      
-      {/* Selector Options */}
-      <div className="flex justify-between items-center w-full bg-neutral-900 p-2.5 rounded-2xl border border-stone-850">
-        <div className="flex space-x-1.5 flex-1">
+    <div className="space-y-4 max-w-lg mx-auto">
+      <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-stone-850">
+        <div className="flex space-x-1.5">
           <button
-            onClick={() => { setChwaziMode('solo'); resetChwazi(); }}
-            className={`flex-1 py-2 text-xs font-black rounded-xl transition ${
-              chwaziMode === 'solo' ? 'bg-amber-500 text-black' : 'text-stone-400 hover:text-white'
-            }`}
+            onClick={() => { setChwaziMode('one'); resetChwazi(); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${chwaziMode === 'one' ? 'bg-amber-500 text-black' : 'text-stone-400'}`}
           >
-            ☝️ 츄아지 선 플레이어 (1인)
+            단 한명 선정 🎯
           </button>
           <button
-            onClick={() => { setChwaziMode('group'); resetChwazi(); }}
-            className={`flex-1 py-2 text-xs font-black rounded-xl transition ${
-              chwaziMode === 'group' ? 'bg-amber-500 text-black' : 'text-stone-400 hover:text-white'
-            }`}
+            onClick={() => { setChwaziMode('team'); resetChwazi(); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${chwaziMode === 'team' ? 'bg-amber-500 text-black' : 'text-stone-400'}`}
           >
-            👥 츄아지 팀 메이커 (그룹)
+            팀 분할기 👥
           </button>
         </div>
 
-        {/* Group size selector if team mode is selected */}
-        {chwaziMode === 'group' && (
-          <div className="flex items-center space-x-1 ml-4 border-l border-stone-800 pl-4">
-            <span className="text-[10px] font-bold text-stone-500">팀수</span>
+        {chwaziMode === 'team' && (
+          <div className="flex items-center space-x-1">
+            <span className="text-[10px] text-stone-500">팀 수:</span>
             <select
-              value={groupCount}
-              onChange={(e) => { setGroupCount(Number(e.target.value)); setSelectionResult(null); }}
-              className="bg-stone-900 border border-stone-800 rounded px-2 py-1 text-xs text-amber-400 font-bold outline-none"
+              value={teamCount}
+              onChange={(e) => { setTeamCount(Number(e.target.value)); resetChwazi(); }}
+              className="bg-stone-900 border border-stone-800 rounded px-1 py-0.5 text-xs text-amber-400"
             >
-              <option value={2}>2개팀</option>
-              <option value={3}>3개팀</option>
-              <option value={4}>4개팀</option>
+              <option value={2}>2팀</option>
+              <option value={3}>3팀</option>
+              <option value={4}>4팀</option>
             </select>
           </div>
         )}
       </div>
 
-      {/* Guide Box */}
-      <div className="text-center bg-amber-500/10 border border-amber-500/20 px-4 py-3 rounded-2xl w-full">
-        <p className="text-xs text-amber-400 leading-relaxed font-semibold">
-          {chwaziStatusText}
-        </p>
-      </div>
-
-      {/* CHWAZI INTERACTIVE PAD */}
+      {/* Interactive Arena */}
       <div
-        ref={padRef}
+        ref={arenaRef}
+        onClick={handleArenaClick}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handlePadClick}
-        className="touch-none bg-neutral-950 relative w-full h-[320px] md:h-[400px] border-2 border-dashed border-amber-500/30 hover:border-amber-500/60 rounded-3xl overflow-hidden cursor-crosshair select-none flex items-center justify-center transition-all shadow-inner"
+        className="relative w-full h-[320px] bg-black border-2 border-dashed border-amber-500/30 rounded-2xl cursor-pointer overflow-hidden flex items-center justify-center text-center shadow-inner"
       >
         {fingers.length === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-stone-600 pointer-events-none">
-            <span className="text-4xl md:text-5xl mb-4 opacity-50">🖐️</span>
-            <p className="text-sm font-bold">CHWAZI TOUCH PAD</p>
-            <p className="text-xs mt-1 max-w-sm">
-              태블릿/모바일은 여러 손가락을 동시에 길게 대주세요.<br />
-              데스크탑은 화면 곳곳을 클릭해 손가락들을 배치해 보세요! (클릭 시 토글 생성/제거)
+          <div className="p-4 space-y-2 pointer-events-none">
+            <span className="text-4xl block animate-pulse">🖐️</span>
+            <h4 className="text-xs font-bold text-stone-400">터치 스크린에 손가락들을 직접 대고 계세요!</h4>
+            <p className="text-[10px] text-stone-500 leading-relaxed">
+              (PC 마우스 환경: 빈 곳을 여러 번 클릭해 가상 손가락들을 배치한 후 시작 버튼을 누르세요)
             </p>
           </div>
         )}
 
-        {/* Active Finger Circles rendering */}
-        {fingers.map((finger) => {
-          const isWinner = selectionResult?.type === 'solo' && selectionResult?.winnerId === finger.id;
-          const isLoser = selectionResult?.type === 'solo' && selectionResult?.winnerId !== finger.id;
-          
-          let circleStyle = {
-            left: `${finger.x}px`,
-            top: `${finger.y}px`,
-            transform: 'translate(-50%, -50%)',
-          };
-
-          // Render proper color circles depending on status
-          let borderClass = 'border-4 border-white';
-          let bgStyle = { backgroundColor: finger.color };
-          let ringPulse = 'animate-ping opacity-75';
-
-          if (isSelecting) {
-            bgStyle = { backgroundColor: finger.color };
-            ringPulse = 'animate-pulse scale-125 border-amber-400';
-          } else if (isWinner) {
-            // Flash Winner with glowing golden aura
-            bgStyle = { backgroundColor: '#f59e0b' };
-            borderClass = 'border-4 border-white shadow-[0_0_30px_#f59e0b] scale-150 transition-all';
-            ringPulse = 'animate-ping duration-300 opacity-90';
-          } else if (isLoser) {
-            // Fade out unselected fingers
-            bgStyle = { backgroundColor: 'rgba(64,64,64,0.2)' };
-            borderClass = 'border-2 border-stone-800 opacity-20';
-            ringPulse = 'hidden';
-          } else if (selectionResult?.type === 'group' && finger.teamIndex !== null) {
-            // Group Mode Colors
-            const team = teamColors[finger.teamIndex];
-            bgStyle = { backgroundColor: team.bg };
-            borderClass = 'border-4 border-white shadow-xl scale-110';
-            ringPulse = 'animate-pulse opacity-50';
-          }
-
-          return (
-            <div
-              key={finger.id}
-              className={`absolute w-16 h-16 md:w-20 md:h-20 rounded-full flex flex-col items-center justify-center transition-all duration-300 pointer-events-none ${borderClass}`}
-              style={circleStyle}
-            >
-              {/* Outer Pulse Ring */}
-              <div
-                className={`absolute inset-[-6px] rounded-full border-2 border-dashed ${ringPulse}`}
-                style={{ borderColor: isWinner ? '#f59e0b' : finger.color }}
-              />
-
-              {/* Inner Circle Fill */}
-              <div className="absolute inset-1 rounded-full transition-all duration-300" style={bgStyle} />
-
-              {/* Text label inside circle */}
-              <div className="z-10 text-[9px] md:text-xs font-black text-white text-center drop-shadow-md">
-                {isWinner ? '당첨 👑' : (selectionResult?.type === 'group' && finger.teamIndex !== null) ? `${finger.teamIndex + 1}팀` : 'WAIT'}
-              </div>
-            </div>
-          );
-        })}
+        {/* Render Virtual/Real Fingers */}
+        {fingers.map((f, i) => (
+          <div
+            key={f.id}
+            className="absolute rounded-full flex items-center justify-center transition-all duration-150"
+            style={{
+              left: `${f.x - 28}px`,
+              top: `${f.y - 28}px`,
+              width: '56px',
+              height: '56px',
+              backgroundColor: f.color,
+              boxShadow: f.isPicked 
+                ? `0 0 35px 15px ${f.color}, inset 0 0 10px #fff` 
+                : f.teamId 
+                ? `0 0 15px 3px ${f.color}` 
+                : '0 0 12px 2px rgba(255,255,255,0.2)',
+              border: f.isPicked ? '4px solid #fff' : '2px solid rgba(255,255,255,0.7)',
+              transform: f.isPicked ? 'scale(1.25)' : 'scale(1)',
+              zIndex: f.isPicked ? 20 : 10
+            }}
+          >
+            {/* Display Indicator */}
+            {f.isPicked && <span className="text-lg font-black text-white animate-bounce">🏆</span>}
+            {f.teamId && (
+              <span className="text-xs font-black bg-black text-white px-1.5 py-0.5 rounded-full border border-white/40">
+                {f.teamId}팀
+              </span>
+            )}
+            {!f.isPicked && !f.teamId && (
+              <span className="text-[10px] font-bold text-black/80">{i + 1}</span>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Control Buttons */}
-      <div className="flex space-x-3 w-full">
-        <button
-          onClick={resetChwazi}
-          className="px-6 py-3 bg-stone-900 hover:bg-stone-800 border border-stone-800 hover:border-stone-700 text-stone-300 font-black rounded-2xl text-xs transition active:scale-95 flex-1"
-        >
-          초기화 (새 게임)
-        </button>
-        <button
-          onClick={triggerChwaziMatch}
-          disabled={isSelecting || fingers.length < 2}
-          className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:opacity-40 text-black font-black rounded-2xl text-xs shadow-lg shadow-amber-500/10 active:scale-95 transition-all flex-[2]"
-        >
-          {isSelecting ? '손가락 정밀 스캔 중...' : '매칭 및 결과 도출!'}
-        </button>
+      {/* Buttons and Result Display */}
+      <div className="space-y-2">
+        <div className="flex space-x-2">
+          <button
+            onClick={runChwazi}
+            disabled={fingers.length < 2 || isProcessing}
+            className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl text-xs transition duration-300 active:scale-95 disabled:opacity-40"
+          >
+            {isProcessing ? '두구두구두구...' : '매칭 시작하기 🚀'}
+          </button>
+          <button
+            onClick={resetChwazi}
+            className="px-4 py-3 bg-stone-850 hover:bg-stone-800 text-stone-300 font-bold rounded-xl text-xs transition duration-300"
+          >
+            전체 초기화
+          </button>
+        </div>
+
+        {resultMessage && (
+          <div className="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-center">
+            <p className="text-xs font-bold text-amber-400">{resultMessage}</p>
+          </div>
+        )}
       </div>
-      
     </div>
   );
 }
 
-// -------------------------------------
-// TIMER TOOL COMPONENT
-// -------------------------------------
+// ---------------------
+// Timer Tool
+// ---------------------
 function TimerTool() {
   const [seconds, setSeconds] = useState(60);
   const [isActive, setIsActive] = useState(false);
@@ -1329,10 +1262,9 @@ function TimerTool() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 py-6 max-w-sm mx-auto animate-fade-in">
-      <h3 className="text-base font-bold text-stone-300">⏳ 모래시계 타이머</h3>
+    <div className="flex flex-col items-center justify-center space-y-6 py-6 max-w-sm mx-auto">
+      <h3 className="text-sm font-bold text-stone-300">⏳ 모래시계 타이머</h3>
 
-      {/* Progress Circle */}
       <div className="relative w-44 h-44 flex items-center justify-center bg-black rounded-full border border-stone-800 shadow-xl">
         <div
           className="absolute inset-2 rounded-full transition-all duration-1000"
@@ -1346,14 +1278,11 @@ function TimerTool() {
         </div>
       </div>
 
-      {/* Controls */}
       <div className="flex space-x-2 w-full">
         <button
           onClick={handleStartStop}
           className={`flex-1 py-3 font-bold rounded-xl text-xs transition-all ${
-            isActive
-              ? 'bg-red-600 text-white'
-              : 'bg-amber-500 text-black'
+            isActive ? 'bg-red-650 text-white' : 'bg-amber-500 text-black'
           }`}
         >
           {isActive ? '일시 정지' : '시작'}
@@ -1366,7 +1295,6 @@ function TimerTool() {
         </button>
       </div>
 
-      {/* Presets */}
       <div className="grid grid-cols-4 gap-2 w-full">
         {[30, 60, 180, 300].map((t) => (
           <button
@@ -1386,17 +1314,17 @@ function TimerTool() {
   );
 }
 
-// -------------------------------------
-// ROULETTE TOOL COMPONENT
-// -------------------------------------
+// ---------------------
+// Roulette Tool
+// ---------------------
 function RouletteTool() {
   const [options, setOptions] = useState([
-    '인디언밥 5대 억울하게 맞기',
-    '다음 판 음료수 직접 픽업',
-    '노래 한 구절 부르기',
-    '아무 말 없이 5분 동안 게임하기',
-    '★ 벌칙 면제권 획득 ★',
-    '테이블 정돈 마스터 (정리 독차지)'
+    '인디언밥 5대 맞기 💥',
+    '다음 판 음료수 직접 픽업 🥤',
+    '노래 한 구절 감미롭게 부르기 🎵',
+    '아무 말 없이 5분 동안 게임하기 🤐',
+    '★ 벌칙 면제권 획득 ★ ✨',
+    '게임 끝나고 테이블 정돈하기 🧹'
   ]);
   const [newOption, setNewOption] = useState('');
   const [winner, setWinner] = useState('');
@@ -1438,13 +1366,12 @@ function RouletteTool() {
       ctx.translate(radius, radius);
       ctx.rotate(startAngle + arcSize / 2);
       ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#000000';
-      
       if (colors[i % colors.length] === '#1e293b' || colors[i % colors.length] === '#78350f' || colors[i % colors.length] === '#b45309') {
         ctx.fillStyle = '#ffffff';
       } else {
         ctx.fillStyle = '#000000';
       }
-      ctx.font = 'bold 11px sans-serif';
+      ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'right';
       const text = opt.length > 15 ? opt.substring(0, 13) + '..' : opt;
       ctx.fillText(text, radius - 15, 4);
@@ -1507,13 +1434,12 @@ function RouletteTool() {
   };
 
   return (
-    <div className="space-y-6 max-w-lg mx-auto w-full animate-fade-in">
+    <div className="space-y-6 max-w-lg mx-auto">
       <div className="text-center">
-        <h3 className="text-sm font-bold text-stone-300">🎡 손에 땀을 쥐는 벌칙 룰렛</h3>
+        <h3 className="text-sm font-bold text-stone-300">🎡 벌칙 복불복 돌림판</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        {/* Left: Interactive Canvas Wheel */}
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="relative">
             <div className="absolute top-[-10px] left-1/2 transform -translate-x-1/2 z-10">
@@ -1532,18 +1458,17 @@ function RouletteTool() {
             disabled={isSpinning || options.length === 0}
             className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black font-black rounded-xl text-xs shadow-lg transition active:scale-95"
           >
-            {isSpinning ? '돌아가는 중...' : '룰렛 돌리기!'}
+            {isSpinning ? '돌아가는 중...' : '돌림판 돌리기!'}
           </button>
 
           {winner && (
             <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl max-w-[240px]">
-              <span className="text-[10px] text-red-400 font-extrabold uppercase tracking-widest block">당첨 벌칙</span>
+              <span className="text-[10px] text-red-400 font-extrabold uppercase tracking-widest block">당첨 결과</span>
               <p className="text-xs font-bold text-white mt-1">{winner}</p>
             </div>
           )}
         </div>
 
-        {/* Right: Custom Options Editor */}
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-bold text-stone-400">룰렛 항목 관리</label>
