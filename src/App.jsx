@@ -1,9 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// --- Firebase Web SDK 임포트 추가 ---
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+
+// --- 사장님의 파이어베이스 테스트 계정 정보 직접 주입 ---
+const firebaseConfig = {
+  apiKey: "AIzaSyC6--lGUUZHjRS3C-V989qZdJKeYMCz3LA",
+  authDomain: "our-azit-test.firebaseapp.com",
+  projectId: "our-azit-test",
+  storageBucket: "our-azit-test.firebasestorage.app",
+  messagingSenderId: "482978474238",
+  appId: "1:482978474238:web:bb9cf584bec8818f30ddaf"
+};
+
+// 파이어베이스 및 Firestore 초기화
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 // ==========================================
 // MOCK DATA: Menu, Games, Recommendations, and Pricing
 // ==========================================
-
 const MENU_ITEMS = [
   { id: 'm1', name: '아메리카노', category: 'coffee', price: 4000, desc: '엄선된 원두로 내린 깊고 진한 기본 커피', isPopular: true, options: ['HOT', 'ICE'], imageText: '아메리카노 이미지' },
   { id: 'm2', name: '바닐라 라떼', category: 'coffee', price: 4800, desc: '달콤한 천연 바닐라 빈 시럽과 부드러운 우유의 만남', isPopular: false, options: ['HOT', 'ICE'], imageText: '바닐라 라떼 이미지' },
@@ -136,14 +153,41 @@ export default function App() {
     setCart([]);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cart.length === 0) return;
-    setOrderSuccess(true);
-    setTimeout(() => {
-      setOrderSuccess(false);
-      setShowOrderModal(false);
-      clearCart();
-    }, 3000);
+
+    try {
+      // ⚠️ 시뮬레이션: 현재 키오스크가 '3번 테이블'이라고 가정 (추후 상단 변수로 테이블 지정 가능)
+      const currentTableId = "3"; 
+      
+      // 포스기(App.jsx)의 경로 구조 규칙과 일치하는 문서 참조 생성
+      const tableRef = doc(db, 'artifacts', 'our-azit-test', 'public', 'data', 'tables', currentTableId);
+
+      // 장바구니 데이터를 포스기 영수증 엔진이 이해할 수 있는 규격으로 변환
+      const formattedSnacks = cart.map(item => ({
+        name: item.name,
+        price: item.price,
+        qty: item.qty
+      }));
+
+      // 파이어베이스 데이터베이스의 해당 테이블 문서 내 snacks 배열에 실시간 누적 추가(arrayUnion)
+      await updateDoc(tableRef, {
+        active: true, // 주문이 들어오면 테이블을 사용 중 상태로 강제 활성화 방어벽
+        snacks: arrayUnion(...formattedSnacks)
+      });
+
+      // 기존 UI 성공 모달 가동 리셋 로직
+      setOrderSuccess(true);
+      setTimeout(() => {
+        setOrderSuccess(false);
+        setShowOrderModal(false);
+        clearCart();
+      }, 3000);
+
+    } catch (error) {
+      console.error("카운터 DB 전송 실패:", error);
+      alert("카운터 포스기와의 무선 연결이 지연되고 있습니다. 스태프 호출 벨을 눌러주세요!");
+    }
   };
 
   const totalCartPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
